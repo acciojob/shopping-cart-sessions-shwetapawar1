@@ -1,6 +1,3 @@
-// This is the boilerplate code given for you
-// You can modify this code
-// Product data
 const products = [
   { id: 1, name: "Product 1", price: 10 },
   { id: 2, name: "Product 2", price: 20 },
@@ -13,62 +10,69 @@ const productList = document.getElementById("product-list");
 const cartList = document.getElementById("cart-list");
 const clearCartBtn = document.getElementById("clear-cart-btn");
 
-
-function getCartFromSession() {
-  const cart = sessionStorage.getItem("cart");
-  return cart ? JSON.parse(cart) : [];
+function getCart() {
+  const data = sessionStorage.getItem("cart");
+  return data ? JSON.parse(data) : [];
 }
 
-
-function saveCartToSession(cart) {
+function saveCart(cart) {
   sessionStorage.setItem("cart", JSON.stringify(cart));
 }
 
+function rebuildCartFromDOM() {
+  const cart = [];
+  Array.from(cartList.children).forEach((li) => {
+    const text = li.textContent;
+    const product = products.find(
+      (p) => ${p.name} - $${p.price} === text
+    );
+    if (product) {
+      cart.push(product);
+    }
+  });
+  return cart;
+}
 
 function renderProducts() {
   products.forEach((product) => {
     const li = document.createElement("li");
-    li.textContent = `${product.name} - $${product.price}`;
-
     const btn = document.createElement("button");
     btn.textContent = "Add to Cart";
-
-    btn.addEventListener("click", () => {
-      addToCart(product);
-    });
-
+    btn.onclick = () => addToCart(product.id);
+    li.textContent = `${product.name} - $${product.price} `;
     li.appendChild(btn);
     productList.appendChild(li);
   });
 }
 
-
 function renderCart() {
   cartList.innerHTML = "";
-
-  const cart = getCartFromSession();
-
-  cart.forEach((item) => {
+  getCart().forEach((item) => {
     const li = document.createElement("li");
-    li.textContent = `${item.name} - $${item.price}`;
+    li.textContent = ${item.name} - $${item.price};
     cartList.appendChild(li);
   });
 }
 
+function addToCart(productId) {
+  let cart = getCart();
 
-function addToCart(product) {
-  const cart = getCartFromSession();
+  if (cart.length === 0 && cartList.children.length > 0) {
+    cart = rebuildCartFromDOM();
+  }
+
+  const product = products.find((p) => p.id === productId);
   cart.push(product);
-  saveCartToSession(cart);
+  saveCart(cart);
   renderCart();
 }
 
-
-clearCartBtn.addEventListener("click", () => {
+function clearCart() {
   sessionStorage.removeItem("cart");
-  renderCart();
-});
+  cartList.innerHTML = "";
+}
 
+clearCartBtn.onclick = clearCart;
 
 renderProducts();
 renderCart();
